@@ -17,13 +17,7 @@ class InteractiveAnimation {
         this.isLoaded = false;
         this.initTimeout = null;
         
-        // Sicherheitschecks
-        if (typeof THREE === 'undefined') {
-            console.error('THREE.js ist nicht geladen!');
-            this.showError('Three.js konnte nicht geladen werden. Bitte Seite neu laden.');
-            return;
-        }
-        
+        // Sicherheitschecks werden jetzt in HTML gemacht
         this.raycaster = new THREE.Raycaster();
         this.mouse = new THREE.Vector2();
         
@@ -419,5 +413,5 @@ class InteractiveAnimation {
     }
 }
 
-// Diese Datei wird nur geladen wenn THREE.js verfügbar ist
-// Initialisierung erfolgt in der HTML-Datei
+// Diese Datei wird dynamisch geladen wenn THREE.js verfügbar ist
+// Keine automatische Initialisierung - wird von HTML gesteuert
