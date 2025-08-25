@@ -6,9 +6,8 @@
     <title>Jake2 - Interaktive 3D Animation</title>
     <meta name="description" content="Moderne 3D-Animation mit Touch- und Maus-Interaktivität">
     
-    <!-- Three.js CDN mit Fallbacks -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r150/three.min.js" 
-            onerror="this.onerror=null; this.src='https://unpkg.com/three@0.150.0/build/three.min.js'"></script>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E✨%3C/text%3E%3C/svg%3E">
     
     <style>
         * {
@@ -158,6 +157,30 @@
     
     <div class="cursor-dot" id="cursor-dot"></div>
 
-    <script src="animation.js"></script>
+    <!-- Three.js muss vor der Animation geladen werden -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r150/three.min.js"></script>
+    <script>
+        // Warte bis Three.js vollständig geladen ist
+        function loadAnimation() {
+            if (typeof THREE !== 'undefined') {
+                console.log('Three.js geladen, starte Animation...');
+                const script = document.createElement('script');
+                script.src = 'animation.js';
+                script.onload = function() {
+                    console.log('Animation.js geladen');
+                };
+                script.onerror = function() {
+                    console.error('Fehler beim Laden von animation.js');
+                };
+                document.head.appendChild(script);
+            } else {
+                console.log('Three.js noch nicht bereit, warte...');
+                setTimeout(loadAnimation, 100);
+            }
+        }
+        
+        // Starte das Laden
+        loadAnimation();
+    </script>
 </body>
 </html>
