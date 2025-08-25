@@ -414,4 +414,15 @@ class InteractiveAnimation {
 }
 
 // Diese Datei wird dynamisch geladen wenn THREE.js verfügbar ist
-// Keine automatische Initialisierung - wird von HTML gesteuert
+// Sichere Initialisierung nach Script-Ladung (defer garantiert Reihenfolge)
+(function startWhenReady() {
+    if (typeof THREE === 'undefined' || typeof InteractiveAnimation === 'undefined') {
+        setTimeout(startWhenReady, 100);
+        return;
+    }
+    try {
+        new InteractiveAnimation();
+    } catch (err) {
+        console.error('Initialisierung fehlgeschlagen:', err);
+    }
+})();
