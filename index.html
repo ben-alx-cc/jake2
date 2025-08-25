@@ -157,30 +157,96 @@
     
     <div class="cursor-dot" id="cursor-dot"></div>
 
-    <!-- Three.js muss vor der Animation geladen werden -->
+    <!-- Three.js laden -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r150/three.min.js"></script>
+    
+    <!-- Animation Script -->
+    <script src="animation.js"></script>
+    
     <script>
-        // Warte bis Three.js vollständig geladen ist
-        function loadAnimation() {
-            if (typeof THREE !== 'undefined') {
-                console.log('Three.js geladen, starte Animation...');
-                const script = document.createElement('script');
-                script.src = 'animation.js';
-                script.onload = function() {
-                    console.log('Animation.js geladen');
-                };
-                script.onerror = function() {
-                    console.error('Fehler beim Laden von animation.js');
-                };
-                document.head.appendChild(script);
-            } else {
-                console.log('Three.js noch nicht bereit, warte...');
-                setTimeout(loadAnimation, 100);
+        // Sichere Initialisierung
+        let animationInstance = null;
+        let initAttempts = 0;
+        const maxAttempts = 50; // 5 Sekunden bei 100ms Intervallen
+
+        function initAnimation() {
+            initAttempts++;
+            
+            if (animationInstance) {
+                return; // Bereits initialisiert
+            }
+            
+            if (initAttempts > maxAttempts) {
+                console.log('Max Versuche erreicht, aktiviere Fallback...');
+                activateFallback();
+                return;
+            }
+            
+            try {
+                if (typeof THREE === 'undefined') {
+                    console.log(`THREE.js noch nicht geladen, Versuch ${initAttempts}/${maxAttempts}...`);
+                    setTimeout(initAnimation, 100);
+                    return;
+                }
+                
+                if (typeof InteractiveAnimation === 'undefined') {
+                    console.log(`InteractiveAnimation noch nicht geladen, Versuch ${initAttempts}/${maxAttempts}...`);
+                    setTimeout(initAnimation, 100);
+                    return;
+                }
+                
+                console.log('Initialisiere Animation...');
+                animationInstance = new InteractiveAnimation();
+                
+            } catch (error) {
+                console.error('Fehler bei der Animation-Initialisierung:', error);
+                showError('Animation konnte nicht geladen werden: ' + error.message);
             }
         }
+
+        function showError(message) {
+            const loading = document.getElementById('loading');
+            if (loading) {
+                loading.innerHTML = `
+                    <div style="color: #ff6666; text-align: center;">
+                        <h3>Fehler beim Laden der Animation</h3>
+                        <p>${message}</p>
+                        <button onclick="location.reload()" style="
+                            background: #667eea; 
+                            color: white; 
+                            border: none; 
+                            padding: 10px 20px; 
+                            border-radius: 5px; 
+                            cursor: pointer;
+                            margin-top: 20px;
+                        ">Seite neu laden</button>
+                    </div>
+                `;
+            }
+        }
+
+        function activateFallback() {
+            console.log('Aktiviere Fallback-Animation...');
+            const container = document.getElementById('home-hero-visual-container');
+            if (container) {
+                container.innerHTML = '<div class="fallback-animation"></div>';
+            }
+            
+            const loading = document.getElementById('loading');
+            if (loading && !loading.classList.contains('hidden')) {
+                loading.classList.add('hidden');
+                setTimeout(() => {
+                    loading.style.display = 'none';
+                }, 1000);
+            }
+        }
+
+        // Starte Initialisierung
+        document.addEventListener('DOMContentLoaded', initAnimation);
+        window.addEventListener('load', initAnimation);
         
-        // Starte das Laden
-        loadAnimation();
+        // Backup-Timer
+        setTimeout(initAnimation, 1000);
     </script>
 </body>
 </html>
