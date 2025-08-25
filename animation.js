@@ -11,26 +11,73 @@ class InteractiveAnimation {
         this.targetMouseX = 0;
         this.targetMouseY = 0;
         this.time = 0;
-        this.raycaster = new THREE.Raycaster();
-        this.mouse = new THREE.Vector2();
+        this.raycaster = null;
+        this.mouse = null;
         this.isMobile = window.innerWidth <= 768;
         this.isLoaded = false;
+        this.initTimeout = null;
+        
+        // Sicherheitschecks
+        if (typeof THREE === 'undefined') {
+            console.error('THREE.js ist nicht geladen!');
+            this.showError('Three.js konnte nicht geladen werden. Bitte Seite neu laden.');
+            return;
+        }
+        
+        this.raycaster = new THREE.Raycaster();
+        this.mouse = new THREE.Vector2();
         
         this.init();
     }
 
     init() {
-        this.setupScene();
-        this.createParticleSystem();
-        this.createFloatingSpheres();
-        this.setupLighting();
-        this.setupEventListeners();
-        this.animate();
-        
-        // Animation nach dem Laden starten
-        setTimeout(() => {
-            this.hideLoading();
-        }, 2000);
+        try {
+            this.setupScene();
+            this.createParticleSystem();
+            this.createFloatingSpheres();
+            this.setupLighting();
+            this.setupEventListeners();
+            this.animate();
+            
+            // Animation nach dem Laden starten mit Timeout-Sicherheit
+            this.initTimeout = setTimeout(() => {
+                this.hideLoading();
+            }, 3000);
+            
+            // Schnelleres Laden wenn alles bereit ist
+            setTimeout(() => {
+                if (this.renderer && this.scene) {
+                    this.hideLoading();
+                    if (this.initTimeout) {
+                        clearTimeout(this.initTimeout);
+                    }
+                }
+            }, 1000);
+            
+        } catch (error) {
+            console.error('Fehler beim Initialisieren der Animation:', error);
+            this.showError('Animation konnte nicht geladen werden: ' + error.message);
+        }
+    }
+
+    showError(message) {
+        const loading = document.getElementById('loading');
+        if (loading) {
+            loading.innerHTML = `
+                <div class="loading-spinner" style="border-color: #ff4444; border-top-color: #ff8888;"></div>
+                <div style="color: #ff6666;">${message}</div>
+                <div style="margin-top: 20px; font-size: 0.9rem; opacity: 0.8;">
+                    <button onclick="location.reload()" style="
+                        background: #667eea; 
+                        color: white; 
+                        border: none; 
+                        padding: 10px 20px; 
+                        border-radius: 5px; 
+                        cursor: pointer;
+                    ">Seite neu laden</button>
+                </div>
+            `;
+        }
     }
 
     setupScene() {
@@ -65,7 +112,7 @@ class InteractiveAnimation {
     }
 
     createParticleSystem() {
-        const particleCount = this.isMobile ? 1000 : 2000;
+        const particleCount = this.isMobile ? 500 : 1000;
         const geometry = new THREE.BufferGeometry();
         const positions = new Float32Array(particleCount * 3);
         const colors = new Float32Array(particleCount * 3);
@@ -153,7 +200,7 @@ class InteractiveAnimation {
     }
 
     createFloatingSpheres() {
-        const sphereCount = this.isMobile ? 8 : 15;
+        const sphereCount = this.isMobile ? 5 : 10;
         
         for (let i = 0; i < sphereCount; i++) {
             // Geometrie mit zufälliger Größe
@@ -372,14 +419,70 @@ class InteractiveAnimation {
     }
 }
 
-// Animation initialisieren, wenn die Seite geladen ist
-window.addEventListener('DOMContentLoaded', () => {
-    new InteractiveAnimation();
-});
+// Sichere Initialisierung
+let animationInstance = null;
 
-// Fallback für ältere Browser
-window.addEventListener('load', () => {
-    if (!window.animation) {
-        new InteractiveAnimation();
+function initAnimation() {
+    if (animationInstance) {
+        return; // Bereits initialisiert
     }
-});
+    
+    try {
+        if (typeof THREE === 'undefined') {
+            console.log('THREE.js noch nicht geladen, warte...');
+            setTimeout(initAnimation, 500);
+            return;
+        }
+        
+        console.log('Initialisiere Animation...');
+        animationInstance = new InteractiveAnimation();
+        
+    } catch (error) {
+        console.error('Fehler bei der Animation-Initialisierung:', error);
+        
+        const loading = document.getElementById('loading');
+        if (loading) {
+            loading.innerHTML = `
+                <div style="color: #ff6666; text-align: center;">
+                    <h3>Fehler beim Laden der Animation</h3>
+                    <p>${error.message}</p>
+                    <button onclick="location.reload()" style="
+                        background: #667eea; 
+                        color: white; 
+                        border: none; 
+                        padding: 10px 20px; 
+                        border-radius: 5px; 
+                        cursor: pointer;
+                        margin-top: 20px;
+                    ">Seite neu laden</button>
+                </div>
+            `;
+        }
+    }
+}
+
+// Mehrere Initialisierungsversuche
+document.addEventListener('DOMContentLoaded', initAnimation);
+window.addEventListener('load', initAnimation);
+
+// Fallback für langsamere Verbindungen
+setTimeout(initAnimation, 2000);
+
+// Ultimate Fallback: Wenn nach 8 Sekunden immer noch nichts passiert ist
+setTimeout(() => {
+    if (!animationInstance) {
+        console.log('Aktiviere Fallback-Animation...');
+        const container = document.getElementById('home-hero-visual-container');
+        if (container) {
+            container.innerHTML = '<div class="fallback-animation"></div>';
+        }
+        
+        const loading = document.getElementById('loading');
+        if (loading && !loading.classList.contains('hidden')) {
+            loading.classList.add('hidden');
+            setTimeout(() => {
+                loading.style.display = 'none';
+            }, 1000);
+        }
+    }
+}, 8000);
