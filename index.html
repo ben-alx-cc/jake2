@@ -155,6 +155,8 @@
 
     <!-- Three.js laden -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r150/three.min.js"></script>
+    <!-- Experience statisch (defer) laden, Cache-Buster verhindert altes Caching -->
+    <script defer id="animation-script" src="animation.js?v=3"></script>
     
     <script>
         // Sichere Initialisierung
@@ -182,25 +184,15 @@
                     return;
                 }
                 
-                // Lade animation.js dynamisch erst wenn THREE bereit ist
-                if (typeof InteractiveAnimation === 'undefined') {
-                    console.log('Lade animation.js...');
-                    const script = document.createElement('script');
-                    script.src = 'animation.js';
-                    script.onload = function() {
-                        console.log('animation.js geladen, versuche erneut...');
-                        setTimeout(initAnimation, 100);
-                    };
-                    script.onerror = function() {
-                        console.error('Fehler beim Laden von animation.js');
-                        showError('Animation konnte nicht geladen werden');
-                    };
-                    document.head.appendChild(script);
+                // Warte auf statisch (defer) geladenes Script
+                if (typeof window.InteractiveExperience === 'undefined') {
+                    console.log('Warte auf InteractiveExperience...', initAttempts);
+                    setTimeout(initAnimation, 100);
                     return;
                 }
                 
-                console.log('Initialisiere Animation...');
-                animationInstance = new InteractiveAnimation();
+                console.log('Initialisiere Experience...');
+                animationInstance = new window.InteractiveExperience();
                 
             } catch (error) {
                 console.error('Fehler bei der Animation-Initialisierung:', error);
