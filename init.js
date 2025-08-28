@@ -22,17 +22,14 @@ function showError(message) {
 }
 
 function activateFallback() {
-    const container = document.getElementById('home-hero-visual-container');
-    if (container) {
-        container.innerHTML = '<div class="fallback-animation"></div>';
-    }
+    // Fallback deaktiviert: kein farbiger Hintergrund mehr
     const loading = document.getElementById('loading');
     if (loading && !loading.classList.contains('hidden')) {
         loading.classList.add('hidden');
         setTimeout(() => { loading.style.display = 'none'; }, 800);
     }
     const status = document.getElementById('status');
-    if (status) status.textContent = 'Fallback aktiv';
+    if (status) status.textContent = 'Fallback deaktiviert';
 }
 
 document.addEventListener('DOMContentLoaded', function() {
