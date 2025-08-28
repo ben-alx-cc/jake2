@@ -39,7 +39,8 @@ class InteractiveExperience {
         this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        this.renderer.setClearColor(0x000000, 0);
+        // Sichere Sichtbarkeit des Canvas (nicht transparent)
+        this.renderer.setClearColor(0x000000, 1);
 
         const container = document.getElementById('home-hero-visual-container');
         if (container) {
@@ -207,7 +208,7 @@ class InteractiveExperience {
                     vColor = color;
                     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
                     gl_Position = projectionMatrix * mvPosition;
-                    gl_PointSize = (size * 150.0 * u_pixelRatio) / -mvPosition.z;
+                    gl_PointSize = (size * 300.0 * u_pixelRatio) / -mvPosition.z;
                 }
             `,
             fragmentShader: `
@@ -337,6 +338,9 @@ class InteractiveExperience {
         }
 
         this.updateParticles(0.016);
+        if (this.points) {
+            this.points.rotation.y += 0.0015;
+        }
         this.renderer.render(this.scene, this.camera);
     }
 
