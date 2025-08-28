@@ -57,13 +57,20 @@ class InteractiveExperience {
             // Canvas sichtbar und fullscreen fixieren
             const canvas = this.renderer.domElement;
             canvas.style.position = 'fixed';
-            canvas.style.top = '0';
-            canvas.style.left = '0';
-            canvas.style.width = '100vw';
-            canvas.style.height = '100vh';
+            canvas.style.top = '50%';
+            canvas.style.left = '50%';
+            canvas.style.transform = 'translate(-50%, -50%)';
+            canvas.style.width = '80vw';
+            canvas.style.height = '65vh';
+            canvas.style.maxWidth = '1200px';
+            canvas.style.maxHeight = '800px';
             canvas.style.display = 'block';
             canvas.style.zIndex = '2';
+            canvas.style.borderRadius = '16px';
+            canvas.style.boxShadow = '0 20px 80px rgba(0,0,0,0.55), 0 2px 12px rgba(0,0,0,0.35)';
         }
+        // Renderer-Größe an CSS anpassen
+        this.resizeToCanvasCss();
     }
 
     setupSceneCamera() {
@@ -175,6 +182,8 @@ class InteractiveExperience {
         // Vereinfachung: Wir fügen sie in die Szene und rendern sie zuerst über renderOrder
         this.auroraMesh.renderOrder = -1;
         this.auroraMesh.frustumCulled = false;
+        // Deaktiviert, damit die Karte tiefschwarz bleibt
+        this.auroraMesh.visible = false;
         this.scene.add(this.auroraMesh);
     }
 
@@ -191,11 +200,11 @@ class InteractiveExperience {
             positions[i3 + 1] = (Math.random() - 0.5) * 3.5;
             positions[i3 + 2] = (Math.random() - 0.5) * 4.0;
 
-            const hue = 0.55 + Math.random() * 0.25; // blau-türkis-lila Range
-            const c = new THREE.Color().setHSL(hue, 0.6, 0.6);
-            colors[i3] = c.r;
-            colors[i3 + 1] = c.g;
-            colors[i3 + 2] = c.b;
+            // Helle Partikel auf tiefschwarzem Hintergrund
+            const brightness = 0.85 + Math.random() * 0.15;
+            colors[i3] = brightness;
+            colors[i3 + 1] = brightness;
+            colors[i3 + 2] = brightness;
 
             sizes[i] = Math.random() * 3 + 1;
 
@@ -276,9 +285,7 @@ class InteractiveExperience {
     }
 
     onResize() {
-        this.camera.aspect = window.innerWidth / window.innerHeight;
-        this.camera.updateProjectionMatrix();
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.resizeToCanvasCss();
 
         if (this.auroraMesh && this.auroraMesh.material && this.auroraMesh.material.uniforms) {
             this.auroraMesh.material.uniforms.u_resolution.value.set(window.innerWidth, window.innerHeight);
@@ -286,6 +293,17 @@ class InteractiveExperience {
         if (this.points && this.points.material && this.points.material.uniforms) {
             this.points.material.uniforms.u_pixelRatio.value = Math.min(window.devicePixelRatio, 2);
         }
+    }
+
+    resizeToCanvasCss() {
+        const canvas = this.renderer && this.renderer.domElement;
+        if (!canvas) return;
+        const rect = canvas.getBoundingClientRect();
+        const width = Math.max(1, Math.floor(rect.width));
+        const height = Math.max(1, Math.floor(rect.height));
+        this.renderer.setSize(width, height, false);
+        this.camera.aspect = width / height;
+        this.camera.updateProjectionMatrix();
     }
 
     updateParticles(delta) {
