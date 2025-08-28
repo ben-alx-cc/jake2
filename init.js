@@ -36,6 +36,13 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('[init.js] DOMContentLoaded');
     const status = document.getElementById('status');
     if (status) status.textContent = 'DOM bereit';
+    const closeBtn = document.getElementById('popup-close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+            const popup = document.getElementById('message-popup');
+            if (popup) popup.style.display = 'none';
+        });
+    }
     try {
         if (typeof THREE === 'undefined') {
             if (status) status.textContent = 'THREE fehlt';
