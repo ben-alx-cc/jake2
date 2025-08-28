@@ -3,6 +3,8 @@
 // - Reaktive Glitzer-Partikel im Raum
 // - Sanfte Interaktion via Maus/Touch und DeviceOrientation
 
+console.log('[animation.js] geladen');
+
 class InteractiveExperience {
     constructor() {
         this.scene = null;
