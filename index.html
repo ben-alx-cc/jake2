@@ -148,6 +148,7 @@
     </div>
 
     <div id="home-hero-visual-container"></div>
+    <div id="status" style="position:fixed;left:10px;top:10px;z-index:1001;color:#fff;font:12px/1.4 Arial, sans-serif;opacity:0.85;background:rgba(0,0,0,0.3);padding:6px 8px;border-radius:6px;">Init...</div>
     
     <!-- Content overlay entfernt -->
     
@@ -166,6 +167,8 @@
 
         function initAnimation() {
             initAttempts++;
+            const status = document.getElementById('status');
+            if (status) status.textContent = `Init Versuch ${initAttempts}`;
             
             if (animationInstance) {
                 return; // Bereits initialisiert
@@ -180,6 +183,7 @@
             try {
                 if (typeof THREE === 'undefined') {
                     console.log(`THREE.js noch nicht geladen, Versuch ${initAttempts}/${maxAttempts}...`);
+                    if (status) status.textContent = 'Warte auf THREE...';
                     setTimeout(initAnimation, 100);
                     return;
                 }
@@ -187,16 +191,19 @@
                 // Warte auf statisch (defer) geladenes Script
                 if (typeof window.InteractiveExperience === 'undefined') {
                     console.log('Warte auf InteractiveExperience...', initAttempts);
+                    if (status) status.textContent = 'Warte auf Experience...';
                     setTimeout(initAnimation, 100);
                     return;
                 }
                 
                 console.log('Initialisiere Experience...');
                 animationInstance = new window.InteractiveExperience();
+                if (status) status.textContent = 'Experience gestartet';
                 
             } catch (error) {
                 console.error('Fehler bei der Animation-Initialisierung:', error);
                 showError('Animation konnte nicht geladen werden: ' + error.message);
+                if (status) status.textContent = 'Fehler: ' + (error && error.message ? error.message : 'Unbekannt');
             }
         }
 
