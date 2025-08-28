@@ -54,6 +54,15 @@ class InteractiveExperience {
         if (container) {
             container.innerHTML = '';
             container.appendChild(this.renderer.domElement);
+            // Canvas sichtbar und fullscreen fixieren
+            const canvas = this.renderer.domElement;
+            canvas.style.position = 'fixed';
+            canvas.style.top = '0';
+            canvas.style.left = '0';
+            canvas.style.width = '100vw';
+            canvas.style.height = '100vh';
+            canvas.style.display = 'block';
+            canvas.style.zIndex = '2';
         }
     }
 
@@ -165,6 +174,7 @@ class InteractiveExperience {
         // Damit die Fläche im Hintergrund liegt, nutzen wir einen zweiten Render-Pass (zuerst Aurora, dann Punkte)
         // Vereinfachung: Wir fügen sie in die Szene und rendern sie zuerst über renderOrder
         this.auroraMesh.renderOrder = -1;
+        this.auroraMesh.frustumCulled = false;
         this.scene.add(this.auroraMesh);
     }
 
