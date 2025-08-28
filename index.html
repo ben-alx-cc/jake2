@@ -160,53 +160,6 @@
     <script defer id="animation-script" src="animation.js?v=3"></script>
     
     <script>
-        // Sichere Initialisierung
-        let animationInstance = null;
-        let initAttempts = 0;
-        const maxAttempts = 50; // 5 Sekunden bei 100ms Intervallen
-
-        function initAnimation() {
-            initAttempts++;
-            const status = document.getElementById('status');
-            if (status) status.textContent = `Init Versuch ${initAttempts}`;
-            
-            if (animationInstance) {
-                return; // Bereits initialisiert
-            }
-            
-            if (initAttempts > maxAttempts) {
-                console.log('Max Versuche erreicht, aktiviere Fallback...');
-                activateFallback();
-                return;
-            }
-            
-            try {
-                if (typeof THREE === 'undefined') {
-                    console.log(`THREE.js noch nicht geladen, Versuch ${initAttempts}/${maxAttempts}...`);
-                    if (status) status.textContent = 'Warte auf THREE...';
-                    setTimeout(initAnimation, 100);
-                    return;
-                }
-                
-                // Warte auf statisch (defer) geladenes Script
-                if (typeof window.InteractiveExperience === 'undefined') {
-                    console.log('Warte auf InteractiveExperience...', initAttempts);
-                    if (status) status.textContent = 'Warte auf Experience...';
-                    setTimeout(initAnimation, 100);
-                    return;
-                }
-                
-                console.log('Initialisiere Experience...');
-                animationInstance = new window.InteractiveExperience();
-                if (status) status.textContent = 'Experience gestartet';
-                
-            } catch (error) {
-                console.error('Fehler bei der Animation-Initialisierung:', error);
-                showError('Animation konnte nicht geladen werden: ' + error.message);
-                if (status) status.textContent = 'Fehler: ' + (error && error.message ? error.message : 'Unbekannt');
-            }
-        }
-
         function showError(message) {
             const loading = document.getElementById('loading');
             if (loading) {
@@ -214,7 +167,7 @@
                     <div style="color: #ff6666; text-align: center;">
                         <h3>Fehler beim Laden der Animation</h3>
                         <p>${message}</p>
-                        <button onclick="location.reload()" style="
+                        <button onclick=\"location.reload()\" style=\"
                             background: #667eea; 
                             color: white; 
                             border: none; 
@@ -222,34 +175,50 @@
                             border-radius: 5px; 
                             cursor: pointer;
                             margin-top: 20px;
-                        ">Seite neu laden</button>
+                        \">Seite neu laden</button>
                     </div>
                 `;
             }
         }
 
         function activateFallback() {
-            console.log('Aktiviere Fallback-Animation...');
             const container = document.getElementById('home-hero-visual-container');
             if (container) {
                 container.innerHTML = '<div class="fallback-animation"></div>';
             }
-            
             const loading = document.getElementById('loading');
             if (loading && !loading.classList.contains('hidden')) {
                 loading.classList.add('hidden');
-                setTimeout(() => {
-                    loading.style.display = 'none';
-                }, 1000);
+                setTimeout(() => { loading.style.display = 'none'; }, 800);
             }
+            const status = document.getElementById('status');
+            if (status) status.textContent = 'Fallback aktiv';
         }
 
-        // Starte Initialisierung
-        document.addEventListener('DOMContentLoaded', initAnimation);
-        window.addEventListener('load', initAnimation);
-        
-        // Backup-Timer
-        setTimeout(initAnimation, 1000);
+        document.addEventListener('DOMContentLoaded', function() {
+            const status = document.getElementById('status');
+            if (status) status.textContent = 'DOM bereit';
+            try {
+                if (typeof THREE === 'undefined') {
+                    if (status) status.textContent = 'THREE fehlt';
+                    activateFallback();
+                    return;
+                }
+                if (typeof window.InteractiveExperience === 'undefined') {
+                    if (status) status.textContent = 'Experience fehlt';
+                    activateFallback();
+                    return;
+                }
+                if (status) status.textContent = 'Starte Experience';
+                new window.InteractiveExperience();
+                if (status) status.textContent = 'Läuft';
+            } catch (e) {
+                console.error(e);
+                if (status) status.textContent = 'Fehler';
+                showError(e && e.message ? e.message : 'Unbekannter Fehler');
+                activateFallback();
+            }
+        });
     </script>
 </body>
 </html>
